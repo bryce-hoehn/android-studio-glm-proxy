@@ -30,7 +30,15 @@ class ContentItem(BaseModel):
 
 class Message(BaseModel):
     role: str
-    content: Union[str, List[ContentItem]]
+    content: Union[str, List[ContentItem], None] = None
+    tool_calls: Optional[List[dict]] = None
+    tool_call_id: Optional[str] = None
+    name: Optional[str] = None
+
+
+class Tool(BaseModel):
+    type: str
+    function: dict
 
 
 class ChatCompletionRequest(BaseModel):
@@ -39,6 +47,8 @@ class ChatCompletionRequest(BaseModel):
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: Optional[int] = None
     stream: Optional[bool] = False
+    tools: Optional[List[Tool]] = None
+    tool_choice: Optional[Union[str, dict]] = None
 
 
 @app.get("/models")
@@ -56,17 +66,22 @@ async def chat_completion(request: Request):
         if msg.role == "developer":
             msg.role = "system"
 
+    # Prepare payload, excluding None values to match OpenAI API behavior
+    payload = validated.model_dump(exclude_none=True)
+
     response = requests.post(
         f"{BASE_URL}/chat/completions",
         headers=headers,
-        json=validated.model_dump(),
+        json=payload,
         stream=True,
     )
 
     def generate():
         for chunk in response.iter_lines():
             if chunk:
-                yield chunk.decode() + "\n\n"
+                decoded_chunk = chunk.decode()
+                # Pass through the chunk as-is - the upstream API should handle tool_calls
+                yield decoded_chunk + "\n\n"
 
     return StreamingResponse(
         generate(),
