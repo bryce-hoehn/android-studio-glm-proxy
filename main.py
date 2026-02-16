@@ -3,7 +3,7 @@ import os
 from fastapi.responses import StreamingResponse
 import requests
 import uvicorn
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
@@ -41,6 +41,12 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
 
 
+@app.get("/models")
+def models():
+    response = requests.get(f"{BASE_URL}/models", headers=headers)
+    return response.json()
+
+
 @app.post("/chat/completions")
 async def chat_completion(request: Request):
     json_payload = await request.json()
@@ -66,25 +72,6 @@ async def chat_completion(request: Request):
         generate(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache"},
-    )
-
-
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def proxy_request(request: Request, path: str):
-    body = await request.body()
-
-    response = requests.request(
-        method=request.method,
-        url=f"{BASE_URL}/{path}",
-        headers=headers,
-        data=body if body else None,
-        params=request.query_params,
-    )
-
-    return Response(
-        content=response.content,
-        status_code=response.status_code,
-        headers=dict(response.headers),
     )
 
 
