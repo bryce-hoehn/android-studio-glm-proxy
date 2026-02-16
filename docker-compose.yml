@@ -1,0 +1,15 @@
+services:
+  android-studio-llm-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: android-studio-llm-proxy
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEY=${API_KEY}
+    env_file:
+      - .env
+    volumes:
+      - ./mcp_settings.json:/app/config/mcp_settings.json:ro,z
+    restart: unless-stopped
