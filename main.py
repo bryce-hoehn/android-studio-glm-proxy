@@ -57,7 +57,7 @@ async def chat_completion(request: Request):
 
     response = requests.post(
         f"{BASE_URL}/chat/completions",
-        headers=get_proxy_headers(request.headers),
+        headers=headers,
         json=validated.model_dump(),
         stream=True,
     )
