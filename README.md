@@ -7,7 +7,11 @@ A simple FastAPI proxy server for using GLM Coding in Android Studio.
 - Proxies requests to the upstream API
 - Handles chat completions with role transformation (developer → system)
 - Supports streaming responses
-- Wildcard routing for all other API endpoints
+
+## Limitations
+
+- Currently only supports the `/models` and `/chat/completions` endpoints. Unsure if Android Studio uses any others
+- Probably doesn't support tools?
 
 ## Installation
 
