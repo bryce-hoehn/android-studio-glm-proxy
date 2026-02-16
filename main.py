@@ -41,11 +41,6 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
 
 
-def get_proxy_headers(request_headers):
-    """Filter out host header from request headers for proxying."""
-    return {k: v for k, v in request_headers.items() if k.lower() != "host"}
-
-
 @app.post("/chat/completions")
 async def chat_completion(request: Request):
     json_payload = await request.json()
@@ -81,7 +76,7 @@ async def proxy_request(request: Request, path: str):
     response = requests.request(
         method=request.method,
         url=f"{BASE_URL}/{path}",
-        headers=get_proxy_headers(request.headers),
+        headers=headers,
         data=body if body else None,
         params=request.query_params,
     )
