@@ -1,4 +1,4 @@
-# Android Studio LLM Proxy
+# Android Studio GLM Proxy
 
 A simple FastAPI proxy server for using GLM Coding in Android Studio.
 
