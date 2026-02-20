@@ -1,6 +1,6 @@
 # Android Studio GLM Proxy
 
-A FastAPI proxy server for using GLM Coding in Android Studio.
+A FastAPI proxy server for using GLM Coding in Android Studio. Use alongside [android-studio-mcp-proxy](https://github.com/bryce-hoehn/android-studio-mcp-proxy) for MCP support.
 
 ## Features
 
