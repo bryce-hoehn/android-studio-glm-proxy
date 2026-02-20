@@ -1,6 +1,6 @@
 # Android Studio GLM Proxy
 
-A FastAPI proxy server for using GLM Coding in Android Studio with MCP (Model Context Protocol) server support.
+A FastAPI proxy server for using GLM Coding in Android Studio.
 
 ## Features
 
@@ -8,25 +8,64 @@ A FastAPI proxy server for using GLM Coding in Android Studio with MCP (Model Co
 - Handles chat completions with role transformation (developer → system)
 - Supports streaming responses
 - Supports tool use
-- Dynamic MCP server routing - Register MCP servers from configuration
-- Docker support - Easy deployment with Docker and docker-compose
+- Docker support
 
 ## Installation
 
 ### Docker
 
 1. Clone the repository
+   ```bash
+   git clone https://github.com/bryce-hoehn/android-studio-glm-proxy
+   ```
+
 2. Create a `.env` file with your API key:
    ```bash
    cp .env.example .env
-   # Edit .env and add your API key
    ```
-3. Configure MCP servers in `mcp_settings.json` (optional)
-4. Start the container:
+   Edit .env and add your API key
+
+3. Start the container:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
-5. The server will run on `http://localhost:8000`
+
+4. The server will run on `http://localhost:8000`
+
+### Without Docker
+
+1. Clone the repository
+   ```
+   git clone https://github.com/bryce-hoehn/android-studio-glm-proxy
+   ```
+
+2. Create a `.env` file with your API key:
+   ```bash
+   cp .env.example .env
+   ```
+   Edit .env and add your API key
+
+3. Create a .venv environment
+   ```bash
+   python -m venv .venv
+   ```
+
+4. Enter venv environment
+   ```bash
+   source .venv/bin/activate
+   ```
+
+5. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+6. Run the server:
+   ```bash
+   python main.py
+   ```
+
+7. The server will run on `http://localhost:8000` (until you close the terminal)
 
 ## Configuration
 
@@ -38,51 +77,48 @@ Create a `.env` file with the following variable:
 API_KEY=your_api_key_here
 ```
 
-### MCP Servers
+### Configuration via config.py
 
-Configure MCP servers in `mcp_settings.json`:
+For advanced configuration, you can modify settings directly in [`app/config.py`](app/config.py:1):
 
-```json
-{
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
-      "env": {
-        "DEFAULT_MINIMUM_TOKENS": ""
-      },
-      "alwaysAllow": [
-        "resolve-library-id",
-        "get-library-docs",
-        "query-docs"
-      ]
-    }
-  }
-}
+```python
+class Settings:
+    BASE_URL: str = "https://api.z.ai/api/coding/paas/v4"  # Upstream API URL
+    HOST: str = "0.0.0.0"                                  # Server host
+    PORT: int = 8000                                       # Server port
+    TIMEOUT: int = 60                                       # Request timeout (seconds)
 ```
 
-```bash
-docker-compose restart
+### Configuration via docker-compose.yml
+
+When using Docker, you can customize the deployment by editing [`docker-compose.yml`](docker-compose.yml:1):
+
+```yaml
+services:
+  android-studio-llm-proxy:
+    ports:
+      - "8000:8000"    # Format: "host_port:container_port"
+    environment:
+      - API_KEY=${API_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped  # Options: no, always, on-failure, unless-stopped
 ```
 
-## Using MCP Servers in Android Studio
+Common docker-compose configurations:
+- **Change host port**: Modify `"8000:8000"` to `"HOST_PORT:8000"`
+- **Disable restart**: Set `restart: no`
+- **Always restart**: Set `restart: always`
+
+## Using in Android Studio
 
 1. **Open Android Studio Settings:**
-   - Go to `File` → `Settings` (or `Android Studio` → `Settings` on macOS)
+   - Go to `File` -> `Settings` -> `Tools` -> `AI`
 
 2. **Configure LLM Provider:**
-   - Navigate to `Tools` → `AI Assistant` → `LLM Provider`
-   - Set the API endpoint to: `http://localhost:8000`
+   - Add a provider (local or remote depending on where you deploy it)
+   - Set the API endpoint to: `http://localhost:8000`. Replace `localhost` with ip address if running on a different device
    - Enter anything into the API Key field (ex. "1234")
-
-3. **Enable MCP Integration:**
-   - Navigate to `Tools` → `AI Assistant` → `MCP Servers`
-   - Add a new MCP server with the URL: `http://localhost:8000/mcp/{server_name}`
-   - Replace `{server_name}` with the name from your `mcp_settings.json` (e.g., `context7`)
-
-4. **Example Configuration:**
-   - Server Name: `Context7 Docs`
-   - Server URL: `http://localhost:8000/mcp/context7`
 
 ## API Endpoints
 
@@ -101,16 +137,3 @@ GET /models
 ```
 
 List available models from the upstream API.
-
-### MCP Servers
-
-Dynamic endpoints are created for each configured MCP server:
-
-```
-GET /mcp/{server_name}
-```
-
-For example, with the default configuration:
-```
-GET /mcp/context7
-```

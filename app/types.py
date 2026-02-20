@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 
 class ContentItem(BaseModel):
@@ -28,18 +28,3 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
     tools: Optional[List[Tool]] = None
     tool_choice: Optional[Union[str, dict]] = None
-
-
-class McpServerConfig(BaseModel):
-    """Configuration for a single MCP server."""
-
-    command: str
-    args: List[str] | str
-    env: Optional[Dict[str, str]] = None
-    alwaysAllow: Optional[List[str]] = None
-
-
-class McpSettings(BaseModel):
-    """MCP settings configuration loaded from mcp_settings.json."""
-
-    mcpServers: Dict[str, McpServerConfig]
